@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Exceptions;
 using Interfaces;
 
 namespace Models
@@ -22,7 +23,7 @@ namespace Models
 
             List<ICard> shuffledDeck = new List<ICard>();
 
-            int randomIndex = 0;
+            var randomIndex = 0;
 
             while (deck.Count > 0)
             {
@@ -43,13 +44,18 @@ namespace Models
                 return card;
             }
 
-            throw new Exception("No drawable cards");
-
+            throw new DeckException("No drawable cards");
         }
 
         public ICard DrawSelectedCard(string cardId)
         {
-            var cardToDraw = DrawableCards.Single(c => c.Id == cardId);
+            var cardToDraw = DrawableCards.SingleOrDefault(c => c.Id == cardId);
+
+            if (cardToDraw == null)
+            {
+                throw new DeckException($"Card with ID {cardId} does not exist in Deck");
+            }
+
             DrawableCards.Remove(cardToDraw);
             return cardToDraw;
         }
@@ -58,9 +64,15 @@ namespace Models
         {
             Cards.Add(card);
         }
-        public void RemoveCardFromDeck(ICard card)
+
+        public void RemoveCardFromDeck(string cardId)
         {
-            var cardToRemove = Cards.Single(c => c.Id == card.Id);
+            var cardToRemove = Cards.SingleOrDefault(c => c.Id == cardId);
+            if(cardToRemove == null)
+            {
+                throw new DeckException($"No card with the ID {cardId} exists in the deck");
+            }
+            
             Cards.Remove(cardToRemove);
         }
     }
